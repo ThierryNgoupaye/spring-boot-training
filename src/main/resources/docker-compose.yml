@@ -1,0 +1,28 @@
+# Use root/example as user/password credentials
+services:
+
+  db:
+    container_name: maria-db
+    image: mariadb:10.11-jammy
+    restart: always
+    ports:
+      - "3308:3306"
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+
+  adminer:
+    container_name: adminer-tp
+    image: adminer:latest
+    restart: always
+    ports:
+      - "9080:8080"
+
+  smtp4dev:
+    container_name: smtp_mail_server
+    image: rnwood/smtp4dev:v3
+    restart: always
+    ports:
+      # Change the number before : to the port the web interface should be accessible on
+      - '9081:80'
+      # Change the number before : to the port the SMTP server should be accessible on
+      - '9025:25'
