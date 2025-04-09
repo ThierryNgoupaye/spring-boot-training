@@ -37,7 +37,7 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-@RequestMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 @AllArgsConstructor
 public class UtilisateurController {
 
@@ -48,7 +48,7 @@ public class UtilisateurController {
 
 
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping(path = "inscription")
+    @PostMapping(path = "inscription", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void inscription(@RequestBody Utilisateur utilisateur)
     {
         log.info("inscription");
@@ -57,7 +57,7 @@ public class UtilisateurController {
 
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping(path = "activation")
+    @PostMapping(path = "activation", consumes = MediaType.APPLICATION_JSON_VALUE)
     public void activation(@RequestBody Map<String, String> activation)
     {
         log.info("activation du code");
@@ -148,6 +148,33 @@ public class UtilisateurController {
                                                      .description("")
                                                      .build();
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+    }
+
+
+    @GetMapping(path = "refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<Object>> getAllUtilisateur(HttpServletRequest request)
+    {
+        String authorization = request.getHeader("Authorization");
+        if(authorization != null && authorization.startsWith("Bearer"))
+        {
+            String token = authorization.substring(7);
+            Jwt jwt = this.jwtService.getTokenByValue(token);
+            if(jwt != null)
+            {
+                Map<String, Object> refreshToken = this.jwtService.generate(jwt.getUtilisateur().getUsername());
+                ApiResponse<Object> apiResponse = ApiResponse.builder()
+                        .status(String.valueOf(HttpStatus.OK))
+                        .data(refreshToken.get("Credential"))
+                        .description("")
+                        .build();
+                return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+            }
+        }
+        else
+        {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Il manque le token dans votre requete");
+        }
+        return null;
     }
 }
 

@@ -40,8 +40,8 @@ public class ConfigurationSecuriteApplication {
                                 authorize.requestMatchers("/inscription").permitAll()
                                          .requestMatchers("/activation").permitAll()
                                          .requestMatchers("/connexion").permitAll()
-                                        .requestMatchers("/envoyer-code").permitAll()
-                                        .requestMatchers("/changer-mot-de-passe").permitAll()
+                                         .requestMatchers("/envoyer-code").permitAll()
+                                         .requestMatchers("/changer-mot-de-passe").permitAll()
                                          .anyRequest().authenticated()
 
                         )

@@ -2,11 +2,13 @@ package tech.formation.springSecurityTraining.service;
 
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.ResetPasswordRequestDTO;
 import tech.formation.springSecurityTraining.entite.Role;
 import tech.formation.springSecurityTraining.entite.Utilisateur;
@@ -78,14 +80,14 @@ public class UtilisateurService implements UserDetailsService {
     }
 
     public void changerMotDePasse(String email, String newPassword, String codeActivation) {
-        Validation validation = this.validationService.lireEnFonctionDuCode(codeActivation);
+        final Validation validation = this.validationService.lireEnFonctionDuCode(codeActivation);
         if(Instant.now().isAfter(validation.getExpiration()))
         {
-            throw new RuntimeException("Votre code a expire");
+            throw new ResponseStatusException(HttpStatusCode.valueOf(401),"Votre code a expire");
         }
         if(!validation.getUtilisateur().getEmail().equals(email))
         {
-            throw new RuntimeException("L'email fourni ne correspond a celui a qui appartient ce code de validation");
+            throw new ResponseStatusException(HttpStatusCode.valueOf(401),"L'email fourni ne correspond a celui a qui appartient ce code de validation");
         }
         Utilisateur utilisateur = validation.getUtilisateur();
         utilisateur.setMdp(this.passwordEncoder.encode(newPassword));
