@@ -3,11 +3,8 @@ package tech.formation.springSecurityTraining.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,16 +15,17 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import tech.formation.springSecurityTraining.DTO.ApiError;
 import tech.formation.springSecurityTraining.DTO.ApiResponse;
-import tech.formation.springSecurityTraining.DTO.responseDTO.AuthenticationResponseDTO;
+import tech.formation.springSecurityTraining.DTO.responseDTO.Authentication.AuthenticationResponseDTO;
+import tech.formation.springSecurityTraining.DTO.responseDTO.Authentication.JwtResponseDTO;
+import tech.formation.springSecurityTraining.DTO.responseDTO.UtilisateurDTO;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.AuthentificationDTO;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.ResetPasswordRequestDTO;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.SendCodeRequestDTO;
 import tech.formation.springSecurityTraining.entite.Jwt;
+import tech.formation.springSecurityTraining.entite.Role;
 import tech.formation.springSecurityTraining.entite.Utilisateur;
 import tech.formation.springSecurityTraining.securite.JwtService;
-import tech.formation.springSecurityTraining.service.NotificationService;
 import tech.formation.springSecurityTraining.service.UtilisateurService;
 import tech.formation.springSecurityTraining.service.ValidationService;
 
@@ -44,7 +42,7 @@ public class UtilisateurController {
     private final UtilisateurService utilisateurService;
     private final  AuthenticationManager authenticationManager;
     private final JwtService jwtService;
-    private final ValidationService validationService;
+
 
 
     @ResponseStatus(HttpStatus.CREATED)
@@ -65,26 +63,23 @@ public class UtilisateurController {
     }
 
 
-    @PostMapping(path = "connexion", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "connexion", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<AuthenticationResponseDTO>> connexion(@RequestBody @Valid AuthentificationDTO authentificationDTO)
     {
         final Authentication authentication;
-       /* if (authentificationDTO.username() == null || authentificationDTO.password() == null)
-        {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mot de Passe et nom obligatoires");
-        }*/
         try
         {
             authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authentificationDTO.username(), authentificationDTO.password()));
             if(authentication.isAuthenticated())
             {
-                Map<String, Object> mp  = this.jwtService.generate(authentificationDTO.username());
-                AuthenticationResponseDTO authenticationResponseDTO = AuthenticationResponseDTO.builder().nom((String) mp.get("nom")).id((String) mp.get("id")).role((String) mp.get("role")).Credentials(mp.get("Credential")).username((String) mp.get("username")).build();
-                ApiResponse<AuthenticationResponseDTO> apiResponse = new ApiResponse<>();
-                apiResponse.setData(authenticationResponseDTO);
-                apiResponse.setStatus(String.valueOf(HttpStatus.OK.value()));
-                apiResponse.setDescription("");
-                return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+                Jwt jwt  = this.jwtService.generate(authentificationDTO.username());
+                AuthenticationResponseDTO authenticationResponseDTO = AuthenticationResponseDTO.fromEntityToDTO(jwt);
+                ApiResponse<AuthenticationResponseDTO> apiResponse = ApiResponse.<AuthenticationResponseDTO>builder()
+                                                                                .status(String.valueOf(HttpStatus.OK.value()))
+                                                                                .description("Connexion reussie avec succes")
+                                                                                .data(authenticationResponseDTO)
+                                                                                .build();
+                return ResponseEntity.ok(apiResponse);
             }
             else
             {
@@ -102,7 +97,8 @@ public class UtilisateurController {
     }
 
 
-    @PostMapping(path = "deconnexion", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+
+    @PostMapping(path = "deconnexion", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Object>> deconnexion(HttpServletRequest request)
     {
 
@@ -113,46 +109,52 @@ public class UtilisateurController {
             if(jwt != null)
             {
                 ApiResponse<Object> apiResponse = ApiResponse.builder()
-                        .status(String.valueOf(HttpStatus.OK))
-                        .data(jwt)
-                        .build();
-                return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+                                                                .status(String.valueOf(HttpStatus.OK))
+                                                                .data("Deconnexion reussie avec succes")
+                                                                .build();
+                return ResponseEntity.ok(apiResponse);
             }
         }
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vous n'êtes pas connecté ou token invalide");
     }
 
 
-    @PostMapping(path = "changer-mot-de-passe", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+
+
+
+    @PostMapping(path = "changer-mot-de-passe", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ApiResponse<Object>> changerMotDePasse(@Valid @RequestBody ResetPasswordRequestDTO resetPasswordRequestDTO)
     {
         this.utilisateurService.changerMotDePasse(resetPasswordRequestDTO.email(), resetPasswordRequestDTO.newPassword(), resetPasswordRequestDTO.codeActivation());
         ApiResponse<Object> apiResponse = ApiResponse.builder()
-                                                        .data("Mot de passe modifie avec succes")
+                                                        .data("")
                                                         .status(String.valueOf(HttpStatus.OK))
-                                                        .description("")
+                                                        .description("Mot de passe modifie avec succes")
                                                         .build();
         return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
 
-    @PostMapping(path = "envoyer-code", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Object>> envoyerCode(@RequestBody @Valid SendCodeRequestDTO sendCodeRequestDTO)
+
+
+    @PostMapping(path = "envoyer-code", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ApiResponse<String>> envoyerCode(@RequestBody @Valid SendCodeRequestDTO sendCodeRequestDTO)
     {
         String code = this.utilisateurService.envoyerCode(sendCodeRequestDTO.email());
 
 
-        ApiResponse<Object> apiResponse = ApiResponse.builder()
+        ApiResponse<String> apiResponse = ApiResponse.<String>builder()
                                                      .status(String.valueOf(HttpStatus.OK))
-                                                     .data("Code envoye avec succes: " + code)
-                                                     .description("")
+                                                     .data(code)
+                                                     .description("Code envoye avec succes")
                                                      .build();
-        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+        return ResponseEntity.ok(apiResponse);
     }
 
 
-    @GetMapping(path = "refresh-token", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<ApiResponse<Object>> getAllUtilisateur(HttpServletRequest request)
+
+    @GetMapping(path = "refresh-token")
+    public ResponseEntity<ApiResponse<JwtResponseDTO>> refreshToken(HttpServletRequest request)
     {
         String authorization = request.getHeader("Authorization");
         if(authorization != null && authorization.startsWith("Bearer"))
@@ -161,13 +163,17 @@ public class UtilisateurController {
             Jwt jwt = this.jwtService.getTokenByValue(token);
             if(jwt != null)
             {
-                Map<String, Object> refreshToken = this.jwtService.generate(jwt.getUtilisateur().getUsername());
-                ApiResponse<Object> apiResponse = ApiResponse.builder()
-                        .status(String.valueOf(HttpStatus.OK))
-                        .data(refreshToken.get("Credential"))
-                        .description("")
-                        .build();
-                return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
+                Jwt refreshToken = this.jwtService.generate(jwt.getUtilisateur().getUsername());
+                JwtResponseDTO jwtResponseDTO = JwtResponseDTO.builder()
+                                                                .expirationTime(refreshToken.getExpirationTime())
+                                                                .bearer(refreshToken.getValue())
+                                                                .build();
+                ApiResponse<JwtResponseDTO> apiResponse = ApiResponse.<JwtResponseDTO>builder()
+                                                                    .status(String.valueOf(HttpStatus.OK))
+                                                                    .data(jwtResponseDTO)
+                                                                    .description("Token refraichi avec succes.")
+                                                                    .build();
+                return ResponseEntity.ok(apiResponse);
             }
         }
         else
@@ -175,6 +181,20 @@ public class UtilisateurController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Il manque le token dans votre requete");
         }
         return null;
+    }
+
+
+    @GetMapping(path = "connected-now")
+    public ResponseEntity<ApiResponse<UtilisateurDTO>> getCurrentUser()
+    {
+        Utilisateur utilisateurConnecte = this.utilisateurService.getUtilisateurConnecte();
+        ApiResponse<UtilisateurDTO> apiResponse = ApiResponse.<UtilisateurDTO>builder()
+                .status(String.valueOf(HttpStatus.OK.value()))
+                .description("Utilisateur connecte renvoye avec succes")
+                .data(UtilisateurDTO.fromEntityToDTO(utilisateurConnecte))
+                .build();
+
+        return ResponseEntity.ok(apiResponse);
     }
 }
 

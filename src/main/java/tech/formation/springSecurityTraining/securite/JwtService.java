@@ -31,28 +31,19 @@ public class JwtService {
     private final JwtRepository jwtRepository;
 
 
-    public Map<String, Object> generate(String username)
+    public Jwt generate(String username)
     {
         Utilisateur utilisateur = (Utilisateur) this.utilisateurService.loadUserByUsername(username);
-        Map<String, Object> jwtMap = this.generateJwt(utilisateur);
-
-
-        String bearer = Optional.ofNullable(jwtMap.get("Credential"))
-                .filter(Map.class::isInstance)
-                .map(Map.class::cast)
-                .map(m -> m.get(BEARER))
-                .filter(String.class::isInstance)
-                .map(String.class::cast)
-                .orElseThrow(() -> new IllegalArgumentException("Le token 'bearer' est absent ou invalide"));
-
+        Map<String, Object> jwtGenere = new HashMap<>(this.generateJwt(utilisateur));
         final Jwt jwt = Jwt.builder()
-                .desactive(false)
-                .expire(false)
-                .utilisateur(utilisateur)
-                .value(bearer)
-                .build();
-        this.jwtRepository.save(jwt);
-        return jwtMap;
+                            .desactive(false)
+                            .expire(false)
+                            .utilisateur(utilisateur)
+                            .value(String.valueOf(jwtGenere.get(BEARER)))
+                            .expirationTime((Date)jwtGenere.get("expirationTime"))
+                            .creationTime((Date)jwtGenere.get("creationTime"))
+                            .build();
+        return this.jwtRepository.save(jwt);
     }
 
 
@@ -61,7 +52,7 @@ public class JwtService {
     private @NotNull @Unmodifiable Map<String, Object> generateJwt(@NotNull Utilisateur utilisateur)
     {
         final Date currentTime = Date.from(Instant.now());
-        final Date expirationTime = Date.from(Instant.now().plus(2, ChronoUnit.MINUTES));
+        final Date expirationTime = Date.from(Instant.now().plus(30, ChronoUnit.MINUTES));
 
         final Map<String, Object> claims =  Map.of(
                 Claims.EXPIRATION, expirationTime,
@@ -69,19 +60,15 @@ public class JwtService {
                 "email", utilisateur.getEmail(),
                 "role", String.valueOf(utilisateur.getRole().getLibelle())
         );
-           final String bearer = Jwts.builder()
-                .issuedAt(currentTime)
-                .expiration(expirationTime)
-                .subject(utilisateur.getEmail())
-                .claims(claims)
-                .signWith(getKey())
-                .compact();
-        log.info("date de creation {}  et date d'expiration {}", currentTime, expirationTime);
-        return Map.of("Credential", Map.of(BEARER, bearer, "expiration", expirationTime) ,
-                          "username", utilisateur.getEmail(),
-                          "nom", utilisateur.getNom(),
-                            "id", String.valueOf(utilisateur.getId()),
-                            "role", String.valueOf(utilisateur.getRole().getLibelle()));
+       final String bearer = Jwts.builder()
+            .issuedAt(currentTime)
+            .expiration(expirationTime)
+            .subject(utilisateur.getEmail())
+            .claims(claims)
+            .signWith(getKey())
+            .compact();
+       log.info("date de creation {}  et date d'expiration {}", currentTime, expirationTime);
+       return Map.of(BEARER, bearer, "expirationTime", expirationTime, "creationTime", currentTime);
 
     }
 
@@ -139,12 +126,12 @@ public class JwtService {
     {
         final Jwt jwt =  this.jwtRepository.findByValue(token).orElseThrow(()->new RuntimeException("Invalid Token"));
         jwt.setDesactive(true);
-        jwt.setExpire(true);
+      //  jwt.setExpire(true);
         return this.jwtRepository.save(jwt);
     }
 
 
-    public boolean isTokenActive(String token)
+    public boolean isTokenDesactive(String token)
     {
         Jwt jwt = this.getTokenByValue(token);
         return jwt.isDesactive();

@@ -1,8 +1,11 @@
 package tech.formation.springSecurityTraining.service;
 
+import jakarta.transaction.Status;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,13 +37,13 @@ public class UtilisateurService implements UserDetailsService {
     {
         if (!utilisateur.getEmail().contains("@") || !utilisateur.getEmail().contains("."))
         {
-            throw new RuntimeException("Votre email est invalide");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Votre email est invalide");
         }
         Optional<Utilisateur> user = this.utilisateurRepository.findByEmail(utilisateur.getEmail());
 
         if (user.isPresent())
         {
-            throw new RuntimeException("utilisateur deja present");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Cet utilisateur existe deja dans le systeme");
         }
         String mdpChiffre= this.passwordEncoder.encode(utilisateur.getMdp());
         utilisateur.setMdp(mdpChiffre);
@@ -61,7 +64,7 @@ public class UtilisateurService implements UserDetailsService {
         }
         else
         {
-           Utilisateur utilisateurActive = this.utilisateurRepository.findById(validation.getUtilisateur().getId()).orElseThrow(()->new RuntimeException("Utilisateur inconnu"));
+           Utilisateur utilisateurActive = this.loadUserById(validation.getUtilisateur().getId());
            utilisateurActive.setActif(true);
            this.utilisateurRepository.save(utilisateurActive);
         }
@@ -69,7 +72,15 @@ public class UtilisateurService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return this.utilisateurRepository.findByEmail(username).orElseThrow(()->new RuntimeException("aucun utilisateur ne correspond a cet identifiant"));
+        return this.utilisateurRepository.findByEmail(username)
+                                            .orElseThrow(()-> new ResponseStatusException(HttpStatus.NOT_FOUND,"aucun utilisateur ne correspond a cet username"));
+    }
+
+
+    public Utilisateur loadUserById(Integer id)
+    {
+        return this.utilisateurRepository.findById(id)
+                                            .orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND, "aucun utilisateur ne correspond a cet identifiant"));
     }
 
 
@@ -92,5 +103,16 @@ public class UtilisateurService implements UserDetailsService {
         Utilisateur utilisateur = validation.getUtilisateur();
         utilisateur.setMdp(this.passwordEncoder.encode(newPassword));
         this.utilisateurRepository.save(utilisateur);
+    }
+
+    public Utilisateur getUtilisateurConnecte()
+    {
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (principal instanceof Utilisateur utilisateur) {
+            return utilisateur;
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aucun utilisateur authentifié trouve");
+        }
     }
 }

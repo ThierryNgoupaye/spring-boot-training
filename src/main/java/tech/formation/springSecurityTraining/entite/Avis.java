@@ -11,6 +11,7 @@ import lombok.*;
 @Getter
 @Entity
 @Table(name="avis")
+@Builder
 public class Avis {
 
     @Id

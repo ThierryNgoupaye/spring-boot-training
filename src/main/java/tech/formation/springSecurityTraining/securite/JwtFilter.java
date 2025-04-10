@@ -44,7 +44,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 token = authorization.substring(7);
                 jwtDansBDD = this.jwtService.getTokenByValue(token);
                 isTokenExpired = jwtService.isTokenExpired(token);
-                isTokenDesactive= jwtService.isTokenActive(token);
+                isTokenDesactive= jwtService.isTokenDesactive(token);
                 username = this.jwtService.lireUsername(token);
 
                 if (!isTokenExpired && username.equals(jwtDansBDD.getUtilisateur().getUsername()) && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -54,7 +54,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 }
                 else if(isTokenDesactive)
                 {
-                    throw new RuntimeException("Le token actuellement fourni n'est plus valide et a ete desactive");
+                    throw new RuntimeException("Le token actuellement fourni a ete desactive");
                 }
                 else if(isTokenExpired)
                 {
