@@ -1,6 +1,5 @@
 package tech.formation.springSecurityTraining.service;
 
-import jakarta.transaction.Status;
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
@@ -12,14 +11,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import tech.formation.springSecurityTraining.DTO.resquestDTO.ResetPasswordRequestDTO;
-import tech.formation.springSecurityTraining.entite.Role;
+import tech.formation.springSecurityTraining.DTO.resquestDTO.Inscription.InscriptionRequestDTO;
 import tech.formation.springSecurityTraining.entite.Utilisateur;
 import tech.formation.springSecurityTraining.entite.Validation;
-import tech.formation.springSecurityTraining.enumeration.TypeDeRole;
 import tech.formation.springSecurityTraining.repository.UtilisateurRepository;
 
-import java.awt.*;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
@@ -33,25 +29,28 @@ public class UtilisateurService implements UserDetailsService {
     private  ValidationService validationService;
 
 
-    public void inscription(@NotNull Utilisateur utilisateur)
+    public Utilisateur inscription(@NotNull InscriptionRequestDTO inscriptionRequestDTO)
     {
-        if (!utilisateur.getEmail().contains("@") || !utilisateur.getEmail().contains("."))
-        {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Votre email est invalide");
-        }
-        Optional<Utilisateur> user = this.utilisateurRepository.findByEmail(utilisateur.getEmail());
+        Optional<Utilisateur> user = this.utilisateurRepository.findByEmail(inscriptionRequestDTO.email());
 
         if (user.isPresent())
         {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Cet utilisateur existe deja dans le systeme");
         }
-        String mdpChiffre= this.passwordEncoder.encode(utilisateur.getMdp());
-        utilisateur.setMdp(mdpChiffre);
-        Role roleUtilisateur = new Role();
-        roleUtilisateur.setLibelle(TypeDeRole.UTILISATEUR);
-        utilisateur.setRole(roleUtilisateur);
-        utilisateur = this.utilisateurRepository.save(utilisateur);
+      //  String mdpChiffre= this.passwordEncoder.encode(inscriptionRequestDTO.mdp());
+       // utilisateur.setMdp(mdpChiffre);
+       // Role roleUtilisateur = new Role();
+       // roleUtilisateur.setLibelle(TypeDeRole.UTILISATEUR);
+       // utilisateur.setRole(roleUtilisateur);
+
+
+
+        Utilisateur utilisateurEntite = InscriptionRequestDTO.fromDTOtoEntity(inscriptionRequestDTO);
+        String mdpChiffre= this.passwordEncoder.encode(utilisateurEntite.getMdp());
+        utilisateurEntite.setMdp(mdpChiffre);
+        Utilisateur utilisateur = this.utilisateurRepository.save(utilisateurEntite);
         this.validationService.enregistrer(utilisateur);
+        return utilisateur;
     }
 
 

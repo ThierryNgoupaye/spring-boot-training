@@ -2,10 +2,7 @@ package tech.formation.springSecurityTraining.entite;
 
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import tech.formation.springSecurityTraining.enumeration.TypeDeRole;
 
 @Getter
@@ -13,6 +10,7 @@ import tech.formation.springSecurityTraining.enumeration.TypeDeRole;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Builder
 @Table(name= "role")
 public class Role {
 

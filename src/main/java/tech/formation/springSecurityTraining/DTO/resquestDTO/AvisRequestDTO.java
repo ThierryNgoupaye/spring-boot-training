@@ -17,7 +17,7 @@ public record AvisRequestDTO(
 ) {
     public static Avis fromDTOtoEntity(AvisRequestDTO avisRequestDTO, Utilisateur utilisateur) {
         return Avis.builder()
-                .statut(avisRequestDTO.status() != null ? avisRequestDTO.status() : "")
+                .statut(avisRequestDTO.status() != null ? avisRequestDTO.status() : "Non renseigne")
                 .message(avisRequestDTO.message())
                 .utilisateur(utilisateur)
                 .build();

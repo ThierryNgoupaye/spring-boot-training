@@ -20,14 +20,13 @@ import tech.formation.springSecurityTraining.DTO.responseDTO.Authentication.Auth
 import tech.formation.springSecurityTraining.DTO.responseDTO.Authentication.JwtResponseDTO;
 import tech.formation.springSecurityTraining.DTO.responseDTO.UtilisateurDTO;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.AuthentificationDTO;
+import tech.formation.springSecurityTraining.DTO.resquestDTO.Inscription.InscriptionRequestDTO;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.ResetPasswordRequestDTO;
 import tech.formation.springSecurityTraining.DTO.resquestDTO.SendCodeRequestDTO;
 import tech.formation.springSecurityTraining.entite.Jwt;
-import tech.formation.springSecurityTraining.entite.Role;
 import tech.formation.springSecurityTraining.entite.Utilisateur;
 import tech.formation.springSecurityTraining.securite.JwtService;
 import tech.formation.springSecurityTraining.service.UtilisateurService;
-import tech.formation.springSecurityTraining.service.ValidationService;
 
 
 import java.util.Map;
@@ -47,10 +46,16 @@ public class UtilisateurController {
 
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(path = "inscription", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void inscription(@RequestBody Utilisateur utilisateur)
+    public ResponseEntity<ApiResponse<UtilisateurDTO>> inscription(@RequestBody @Valid InscriptionRequestDTO inscriptionRequestDTO)
     {
         log.info("inscription");
-        this.utilisateurService.inscription(utilisateur);
+       Utilisateur utilisateur = this.utilisateurService.inscription(inscriptionRequestDTO);
+       ApiResponse<UtilisateurDTO> apiResponse = ApiResponse.<UtilisateurDTO>builder()
+               .description("Inscription reussie avec succes")
+               .status(String.valueOf(HttpStatus.CREATED.value()))
+               .data(UtilisateurDTO.fromEntityToDTO(utilisateur))
+               .build();
+       return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
 
 

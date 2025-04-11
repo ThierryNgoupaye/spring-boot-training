@@ -27,7 +27,7 @@ public class Utilisateur implements UserDetails {
     private boolean actif=false;
     private String nom;
     private String email;
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = {CascadeType.ALL, CascadeType.PERSIST, CascadeType.REMOVE})
     private Role role;
 
     @Override

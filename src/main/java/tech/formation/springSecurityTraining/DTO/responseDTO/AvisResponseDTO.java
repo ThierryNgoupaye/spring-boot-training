@@ -1,10 +1,7 @@
 package tech.formation.springSecurityTraining.DTO.responseDTO;
 
 
-import jakarta.validation.Valid;
 import lombok.*;
-import org.jetbrains.annotations.NotNull;
-import tech.formation.springSecurityTraining.DTO.resquestDTO.AvisRequestDTO;
 import tech.formation.springSecurityTraining.entite.Avis;
 import tech.formation.springSecurityTraining.entite.Utilisateur;
 
