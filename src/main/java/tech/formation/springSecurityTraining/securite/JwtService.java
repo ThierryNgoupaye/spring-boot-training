@@ -25,6 +25,7 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
+
     private static final String CLE_DE_CHIFFREMENT ="253600e0f8dbe835b112c2b6b54dd48d65ffb156edd4c3a057cd8fda1a149c10";
     public static final String BEARER = "Bearer";
     private UtilisateurService utilisateurService;

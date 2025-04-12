@@ -24,7 +24,7 @@ public class Utilisateur implements UserDetails {
     private Integer id;
     @Column(name = "mot_de_passe")
     private String mdp;
-    private boolean actif=false;
+    private boolean actif = false;
     private String nom;
     private String email;
     @OneToOne(cascade = {CascadeType.ALL, CascadeType.PERSIST, CascadeType.REMOVE})
@@ -32,7 +32,7 @@ public class Utilisateur implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority("ROLE "+ this.role.getLibelle()));
+        return List.of(new SimpleGrantedAuthority("ROLE_"+ this.role.getLibelle()));
     }
 
     @Override

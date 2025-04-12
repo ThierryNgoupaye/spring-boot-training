@@ -1,0 +1,33 @@
+import connexion.rest
+import utilisateur.rest
+
+### Exécuter la requête d’authentification avec le role utilisateur
+run #Connexion utilisateur avec le role utilisateur
+
+
+### Executer la requete d'authentification avec le role manger
+run #Connexion utilisateur avec le role manager
+
+
+### Excuter la requete d'authentification avec le role admin
+run #Connexion utilisateur avec le role admin
+
+### Deconnecter l'utilisateur
+run #Deconnexion de l'utilisateur
+
+
+### Creer un avis
+POST {{baseUrl}}/avis
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+  "message": "Waouh c'est interessant ces scripts .rest",
+  "idUtilisateur": {{idCurrentUser}}
+}
+
+
+### Lister tous les avis
+GET {{baseUrl}}/avis
+Authorization: Bearer {{authToken}}
+

@@ -3,7 +3,7 @@ package tech.formation.springSecurityTraining.entite;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
+
 
 import java.util.Date;
 
@@ -19,6 +19,8 @@ public class Jwt {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Lob
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String value;
     private boolean expire;
     private  boolean desactive;

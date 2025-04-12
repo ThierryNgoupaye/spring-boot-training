@@ -48,9 +48,9 @@ public class AvisController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<AvisResponseDTO>>> liste() {
         List<AvisResponseDTO> listAvis = this.avisService.liste()
-                .stream()
-                .map(AvisResponseDTO::fromEntityToDTO)
-                .collect(Collectors.toList());
+                                                .stream()
+                                                .map(AvisResponseDTO::fromEntityToDTO)
+                                                .collect(Collectors.toList());
 
         ApiResponse<List<AvisResponseDTO>> apiResponse = ApiResponse.<List<AvisResponseDTO>>builder()
                 .status(String.valueOf(HttpStatus.OK.value()))

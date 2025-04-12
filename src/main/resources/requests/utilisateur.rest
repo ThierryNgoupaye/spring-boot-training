@@ -1,0 +1,28 @@
+import connexion.rest
+
+
+### Exécuter la requête d’authentification avec le role utilisateur
+run #Connexion utilisateur avec le role utilisateur
+
+
+### Executer la requete d'authentification avec le role manger
+run #Connexion utilisateur avec le role manager
+
+
+### Excuter la requete d'authentification avec le role admin
+run #Connexion utilisateur avec le role admin
+
+
+### Recuperation de l'utilisateur connecte
+GET http://localhost:8080/api/connected-now
+Authorization: Bearer {{authToken}}
+
+{}
+
+
+### Deconnexion de l'utilisateur
+POST http://localhost:8080/api/deconnexion
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{}

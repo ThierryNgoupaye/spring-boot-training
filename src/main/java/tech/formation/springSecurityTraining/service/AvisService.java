@@ -3,6 +3,7 @@ package tech.formation.springSecurityTraining.service;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,6 +17,7 @@ import tech.formation.springSecurityTraining.repository.UtilisateurRepository;
 
 import java.util.List;
 
+@Slf4j
 @AllArgsConstructor
 @Service
 public class AvisService {

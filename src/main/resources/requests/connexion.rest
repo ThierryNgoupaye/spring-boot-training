@@ -1,0 +1,48 @@
+### Connexion utilisateur avec le role admin
+POST {{baseUrl}}/connexion
+Content-Type: application/json
+
+{
+  "username": "thierryngoupaye0@gmail.com",
+  "password": "password"
+}
+> {% client.global.set("authToken", response.body.data.credentials.bearer);
+    client.global.set("idCurrentUser", response.body.data.utilisateur.id);
+%}
+
+
+
+
+### Connexion utilisateur avec le role utilisateur
+POST {{baseUrl}}/connexion
+Content-Type: application/json
+
+{
+  "username": "serenangoupaye0@gmail.com",
+  "password": "password"
+}
+> {% client.global.set("authToken", response.body.data.credentials.bearer);
+    client.global.set("idCurrentUser", response.body.data.utilisateur.id);
+%}
+
+
+
+### Connexion utilisateur avec le role manager
+POST {{baseUrl}}/connexion
+Content-Type: application/json
+
+{
+  "username": "arianengoupaye0@gmail.com",
+  "password": "password"
+}
+> {% client.global.set("authToken", response.body.data.credentials.bearer);
+    client.global.set("idCurrentUser", response.body.data.utilisateur.id);
+%}
+
+
+
+
+
+
+
+

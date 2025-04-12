@@ -18,6 +18,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.http.HttpMethod.GET;
+
 
 @Configuration
 @EnableWebSecurity
@@ -32,19 +34,34 @@ public class ConfigurationSecuriteApplication {
 
 
     @Bean
+    public SpringSecurityErrorHandler springSecurityErrorHandler() {
+        return new SpringSecurityErrorHandler();
+    }
+
+
+
+
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception
     {
         return
             httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                        .cors(AbstractHttpConfigurer::disable)
                         .authorizeHttpRequests(authorize ->
                                 authorize.requestMatchers("/inscription").permitAll()
                                          .requestMatchers("/activation").permitAll()
                                          .requestMatchers("/connexion").permitAll()
                                          .requestMatchers("/envoyer-code").permitAll()
                                          .requestMatchers("/changer-mot-de-passe").permitAll()
+                                         .requestMatchers(GET,"avis").hasRole("ADMINISTRATEUR")
                                          .anyRequest().authenticated()
 
                         )
+                    .exceptionHandling(exceptionHandler -> exceptionHandler
+                            .accessDeniedHandler(springSecurityErrorHandler())
+                            .authenticationEntryPoint(springSecurityErrorHandler())
+                    )
                     .sessionManagement(httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                     .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                     .build();
